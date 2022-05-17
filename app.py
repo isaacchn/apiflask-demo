@@ -1,54 +1,41 @@
-from apiflask import APIFlask, Schema, abort
+from apiflask import APIFlask, Schema
+from flask_sqlalchemy import SQLAlchemy
 from apiflask.fields import Integer, String
 from apiflask.validators import Length, OneOf
+import os
 
-app = APIFlask(__name__)  # 可以使用 title 和 version 参数来自定义 API 的名称和版本
-pets = [
-    {
-        'id': 0,
-        'name': 'Kitty',
-        'category': 'cat'
-    },
-    {
-        'id': 1,
-        'name': 'Coco',
-        'category': 'dog'
-    }
-]
+app = APIFlask(__name__)
+
+app.config['SECRET_KEY'] = os.urandom(32)
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///' + os.path.join(app.root_path, 'foo.db'))
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL',
+                                                  'mysql://yangxu:root123@10.10.30.32:3306/flask_demo')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
 
 
-# 定义一个请求数据模式类
-class PetInSchema(Schema):
-    name = String(required=True, validate=Length(0, 10))  # 可以使用 description 参数添加字段描述
-    category = String(required=True, validate=OneOf(['dog', 'cat']))
+# class ModelDo(Schema):
+#     name = String(required=True, validate=Length(0, 10))
 
 
-# 定义一个响应数据模式类
-class PetOutSchema(Schema):
-    id = Integer()
-    name = String()
-    category = String()
+class Model(db.Model):
+    __tablename__ = 't_model'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String)
 
 
-@app.get('/pets/<int:pet_id>')
-@app.output(PetOutSchema)  # 使用 @app.output 装饰器标记响应数据模式
-def get_pet(pet_id):
-    if pet_id > len(pets) - 1:
-        abort(404)
-    # 在真实程序里，你可以直接返回 ORM 模型类的实例，比如
-    # return Pet.query.get(1)
-    return pets[pet_id]
+class ModelSchema(Schema):
+    name = String(required=True, validate=Length(0, 20))
 
 
-@app.patch('/pets/<int:pet_id>')
-@app.input(PetInSchema(partial=True))  # 使用 @app.input 装饰器标记请求数据模式
-@app.output(PetOutSchema)
-def update_pet(pet_id, data):  # 通过验证后的请求数据字典会注入到视图函数
-    if pet_id > len(pets) - 1:
-        abort(404)
-    for attr, value in data.items():
-        pets[pet_id][attr] = value
-    return pets[pet_id]
+@app.post('/models')
+@app.input(ModelSchema(partial=False))
+def create_model(data):
+    model = Model()
+    model.name = data['name']
+    db.session.add(model)
+    db.session.commit()
 
 
 if __name__ == '__main__':
