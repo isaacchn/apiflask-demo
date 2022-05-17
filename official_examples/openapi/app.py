@@ -1,9 +1,10 @@
-from apiflask import APIFlask, Schema, abort
+from apiflask import Schema, abort
 from apiflask.fields import Integer, String
 from apiflask.validators import Length, OneOf
+from main import CustomAPIFlask
 
 # set openapi.info.title and openapi.info.version
-app = APIFlask(__name__, title='Pet API', version='1.0')
+app = CustomAPIFlask(__name__, title='Pet API', version='1.0')
 
 # All the OpenAPI field config can be set with the corresponding attributes of the app instance:
 # app.description = '...'
@@ -206,3 +207,7 @@ def delete_pet(pet_id):
     pets[pet_id]['deleted'] = True
     pets[pet_id]['name'] = 'Ghost'
     return ''
+
+
+if __name__ == '__main__':
+    app.run()

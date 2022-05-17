@@ -2,8 +2,10 @@ from apiflask import APIFlask
 
 
 class CustomAPIFlask(APIFlask):
-    def __init__(self, import_name: str) -> None:
-        super().__init__(import_name)
+    def __init__(self, import_name: str,
+                 title: str = 'APIFlask',
+                 version: str = '0.1.0') -> None:
+        super().__init__(import_name, title, version)
         self.config['SWAGGER_UI_CSS'] = 'https://unpkg.com/swagger-ui-dist@3/swagger-ui.css'
         self.config['SWAGGER_UI_BUNDLE_JS'] = 'https://unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js'
         self.config['SWAGGER_UI_STANDALONE_PRESET_JS'] = \
