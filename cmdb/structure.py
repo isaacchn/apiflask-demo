@@ -15,6 +15,7 @@ class Structure(Document):
     """
     name = StringField(required=True, max_length=31, unique=True)
     description = StringField(required=True, max_length=255)
+    parent_structure = StringField(required=False)
     attributes = ListField(EmbeddedDocumentField(StructureAttribute))
     # fields = ListField(StringField())
 
